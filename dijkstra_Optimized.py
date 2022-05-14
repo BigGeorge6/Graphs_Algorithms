@@ -1,3 +1,4 @@
+from importlib.resources import path
 import sys
 import random
 import numpy as np
@@ -97,6 +98,20 @@ def print_result(previous_nodes, shortest_path, start_node, target_node):
     
     print("We found the following best path with a value of {}.".format(shortest_path[target_node]))
     print(" -> ".join(reversed(path)))
+    return path
+
+def get_result(previous_nodes, shortest_path, start_node, target_node):
+    path = []
+    node = target_node
+    
+    while node != start_node:
+        path.append(node)
+        node = previous_nodes[node]
+ 
+    # Add the start node manually
+    path.append(start_node)
+    
+    return path
 
 nodes = ["Invitarla", "Pasar por ella", "Esperar que llegue", "Ir al lugar", 
         "Comer", "Beber", "Coquetearle", "Acariciarle","Besarla","Sexo <3"]
@@ -127,6 +142,9 @@ init_graph["Comer"]["Beber"] = distances[13]
 graph = Graph(nodes, init_graph)
 previous_nodes, shortest_path = dijkstra_algorithm(graph=graph, start_node="Invitarla")
 print_result(previous_nodes, shortest_path, start_node="Invitarla", target_node="Sexo <3")
+path = []
+path = get_result(previous_nodes, shortest_path, start_node="Invitarla", target_node="Sexo <3")
+print(path)
 
 G = nx.Graph()
 
@@ -134,17 +152,56 @@ G = nx.Graph()
 1.Invitarla 2.Pasar por ella 3.Esperar que llegue
 4.Ir al lugar 5.Comer 6.Beber 7.Coquetearle
 8.Acariciarle 9.Besarla 10.Sexo <3
-'''  
-G.add_node("Invitarla",pos=(0,6))
-G.add_node("Pasar por ella",pos=(8,0))
-G.add_node("Esperar que llegue",pos=(11,4))
-G.add_node("Ir al lugar",pos=(6,11))
-G.add_node("Comer",pos=(15,0))
-G.add_node("Beber",pos=(16,6))
-G.add_node("Coquetearle",pos=(17,10))
-G.add_node("Acariciarle",pos=(10,15))
-G.add_node("Besarla",pos=(16,13))
-G.add_node("Sexo <3",pos=(20,8))
+'''
+if "Invitarla" in path:
+    G.add_node("Invitarla",pos=(0,6), gen=1)
+else:
+    G.add_node("Invitarla",pos=(0,6), gen=0)
+
+if "Pasar por ella" in path:
+    G.add_node("Pasar por ella",pos=(8,0),gen=1)
+else:
+    G.add_node("Pasar por ella",pos=(8,0),gen=0)
+
+if "Esperar que llegue" in path:
+    G.add_node("Esperar que llegue",pos=(11,4),gen=1)
+else:
+    G.add_node("Esperar que llegue",pos=(11,4),gen=0)
+
+if "Ir al lugar" in path:
+    G.add_node("Ir al lugar",pos=(6,11),gen=1)
+else:
+    G.add_node("Ir al lugar",pos=(6,11),gen=0)
+
+if "Comer" in path:
+    G.add_node("Comer",pos=(15,0),gen=1)
+else:
+    G.add_node("Comer",pos=(15,0),gen=0)
+
+if "Beber" in path:
+    G.add_node("Beber",pos=(16,6),gen=1)
+else:
+    G.add_node("Beber",pos=(16,6),gen=0)
+
+if "Coquetearle" in path:
+    G.add_node("Coquetearle",pos=(17,10),gen=1)
+else:
+    G.add_node("Coquetearle",pos=(17,10),gen=0)
+
+if "Acariciarle" in path:
+    G.add_node("Acariciarle",pos=(10,15),gen=1)
+else:
+    G.add_node("Acariciarle",pos=(10,15),gen=0)
+
+if "Besarla" in path:
+    G.add_node("Besarla",pos=(16,13),gen=1)
+else:
+    G.add_node("Besarla",pos=(16,13),gen=0)
+
+if "Sexo <3" in path:
+    G.add_node("Sexo <3",pos=(20,8),gen=1)
+else:
+    G.add_node("Sexo <3",pos=(20,8),gen=0)
 
 G.add_edge("Invitarla","Ir al lugar", energy = distances[0])
 G.add_edge("Ir al lugar","Acariciarle", energy = distances[1])
@@ -161,11 +218,21 @@ G.add_edge("Esperar que llegue","Beber",energy = distances[11])
 G.add_edge("Esperar que llegue","Comer",energy = distances[12])
 G.add_edge("Comer","Beber", energy = distances[13])
 
+color_map=nx.get_node_attributes(G,"gen")
+
+for key in color_map:
+    if color_map[key] == 1:
+        color_map[key] = "red"
+    if color_map[key] == 0:
+        color_map[key] = "blue"
+
+path_colors = [color_map.get(node) for node in G.nodes()]
+
 pos = nx.get_node_attributes(G,'pos')
 labels = nx.get_edge_attributes(G,'energy')
 
 nx.draw_networkx_edge_labels(G,pos,edge_labels=labels)
-nx.draw(G, pos, with_labels=True)
+nx.draw(G, pos, with_labels=True, node_color=path_colors)
 
 print(nx.shortest_path(G, source="Invitarla",target="Sexo <3"))
 plt.show()
